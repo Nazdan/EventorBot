@@ -2,7 +2,7 @@ import telebot
 import time
 from telebot import types
 
-token = ''
+token = ""
 
 hide = types.ReplyKeyboardRemove() # Спрятанная клавиатура
 choice1 = types.ReplyKeyboardMarkup()
