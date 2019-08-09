@@ -50,13 +50,10 @@ def look_(message):  # Просмотр ивентов
 
 
 def add_(message):  # Добавление ивентов
-
-    with open('data.txt', 'a') as file:
-        curtime = time.ctime()
-        curtime = curtime[3:]
-        file.write(curtime + ': ' + message.text + '\n')
-    bot.send_message(message.chat.id, 'Готово!')
-    start(message, False)
-
+    command = "INSERT INTO kitten(url) VALUES('{}')".format(message.text)
+    cursor.execute(command)
+    db.commit()
+    bot.send_message(message.chat.id, 'ГОТОВО!')
+    bot.register_next_step_handler(message, choice())
 
 bot.polling(none_stop=True)
