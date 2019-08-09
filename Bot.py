@@ -4,6 +4,8 @@ from telebot import types
 import add
 
 token = "721442351:AAHTxBWlgwvtz3tmDhPwcRkKeXo5WxC6lgk"
+count = 0
+
 
 hide = types.ReplyKeyboardRemove()  # Спрятанная клавиатура
 choice1 = types.ReplyKeyboardMarkup()
@@ -34,7 +36,7 @@ def choose(message):
         bot.register_next_step_handler(message, look_)
     else:
         bot.send_message(message.chat.id, 'Выберите тему', reply_markup=theme_markup)
-        bot.register_next_step_handler(message, add.theme(message))
+        bot.register_next_step_handler(message, add.theme(message, count))
 
 
 def look_(message):  # Просмотр ивентов
