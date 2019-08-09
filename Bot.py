@@ -1,6 +1,7 @@
 import telebot
 import time
 from telebot import types
+import add
 
 token = "721442351:AAHTxBWlgwvtz3tmDhPwcRkKeXo5WxC6lgk"
 
@@ -33,7 +34,7 @@ def choose(message):
         bot.register_next_step_handler(message, look_)
     else:
         bot.send_message(message.chat.id, 'Выберите тему', reply_markup=theme_markup)
-        bot.register_next_step_handler(message, add_)
+        bot.register_next_step_handler(message, add.theme(message))
 
 
 def look_(message):  # Просмотр ивентов
@@ -48,12 +49,5 @@ def look_(message):  # Просмотр ивентов
             count += 1
     start(message, False)
 
-
-def add_(message):  # Добавление ивентов
-    command = "INSERT INTO kitten(url) VALUES('{}')".format(message.text)
-    cursor.execute(command)
-    db.commit()
-    bot.send_message(message.chat.id, 'ГОТОВО!')
-    bot.register_next_step_handler(message, choice())
 
 bot.polling(none_stop=True)
