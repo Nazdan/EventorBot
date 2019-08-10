@@ -2,7 +2,7 @@ import telebot
 import pymysql
 from telebot import types
 
-token = '721442351:AAHTxBWlgwvtz3tmDhPwcRkKeXo5WxC6lgk'
+token = ''
 count = 10
 the = ''
 my_town = ''
