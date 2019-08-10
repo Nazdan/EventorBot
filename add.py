@@ -18,7 +18,7 @@ def theme(message):
 def create(message):
     l = [message.text.split('\n')]
     command = "INSERT INTO `all`(`user_id`, `event_id`, `name`, `date`, `time`, `adress`, `theme`, `description`)" \
-              " VALUES ({}, {}, {}, {}, {}, {}, {}, {})".format(message.from_user.id, cnt, l[0], l[1], l[2], l[3], the, l[4])
+              " VALUES('{}, {}, {}, {}, {}, {}, {}, {}')".format(message.from_user.id, cnt, l[0], l[1], l[2], l[3], the, l[4])
     cursor.execute(command)
     db.commit()
     bot.send_message(message.chat.id, 'ГОТОВО!')

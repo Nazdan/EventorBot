@@ -1,12 +1,10 @@
 import telebot
-import time
 import pymysql
 from telebot import types
-import add
 
 token = "721442351:AAHTxBWlgwvtz3tmDhPwcRkKeXo5WxC6lgk"
-count = 0
-
+count = 10
+the = ''
 
 db = pymysql.connect(host='127.0.0.1', user='root', passwd='', db='events', charset='utf8mb4')
 cursor = db.cursor()
@@ -25,7 +23,7 @@ theme_markup.row(other, types.KeyboardButton('Всё'))
 bot = telebot.TeleBot(token=token)
 
 
-@bot.message_handler(commands=["start"])
+@bot.message_handler(commands=["start", 'd'])
 def start(message, ter=True):
     if ter:  # ter=True, если функция вызывается по окончанию добавления/просмотра ивентов
         bot.send_message(message.chat.id, 'Привет! Что хочешь сделать?', reply_markup=choice1)
@@ -40,20 +38,39 @@ def choose(message):
         bot.register_next_step_handler(message, look_)
     else:
         bot.send_message(message.chat.id, 'Выберите тему', reply_markup=theme_markup)
-        bot.register_next_step_handler(message, add.theme)
+        bot.register_next_step_handler(message, theme)
 
 
 def look_(message):  # Просмотр ивентов
-    count = 1
-    sndm = []
-    with open('data.txt') as file:
-        for i in file:
-            sndm.append(i)
-        print(sndm)
-        for i in sndm:
-            bot.send_message(message.chat.id, str(count) + ') ' + i + '\n')
-            count += 1
+    snd = ''
+    command = 'SELECT * FROM all'
+    cursor.execute(command)
+    data = cursor.fetchall()
+    for event in data:
+        snd += event[2] + " " + event[3] + ' ' + event[4] + '\n' + event[5] + '\n' + event[7] + '\n' * 2
+    bot.send_message(message.chat.id, snd + 'Воть!!!')
     start(message, False)
+
+
+def theme(message):
+    global the
+    the = message.text
+    bot.send_message(message.chat.id, "Напишите информацию о  вашем событии по шаблону \n Название \n Дата \n Время "
+                                      "\n Место проведения \n Описание")
+    bot.register_next_step_handler(message, create)
+
+
+def create(message):
+    global count
+    l = message.text.split('\n')
+    print(l)
+    command = "INSERT INTO `all`(`user_id`, `event_id`, `name`, `date`, `time`, `adress`, `theme`, `description`)" \
+              " VALUES('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(message.from_user.id, str(count), l[0], l[1], l[2], l[3], the, l[4])
+    cursor.execute(command)
+    db.commit()
+    count += 1
+    bot.send_message(message.chat.id, 'ГОТОВО!')
+    bot.register_next_step_handler(message, start)
 
 
 bot.polling(none_stop=True)
