@@ -43,7 +43,7 @@ def choose(message):
 
 def look_(message):  # Просмотр ивентов
     snd = ''
-    command = 'SELECT * FROM all'
+    command = 'SELECT * FROM `all` WHERE 1'
     cursor.execute(command)
     data = cursor.fetchall()
     for event in data:
@@ -70,7 +70,7 @@ def create(message):
     db.commit()
     count += 1
     bot.send_message(message.chat.id, 'ГОТОВО!')
-    bot.register_next_step_handler(message, start)
+    start(message, False)
 
 
 bot.polling(none_stop=True)
