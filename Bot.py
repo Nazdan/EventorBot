@@ -11,14 +11,22 @@ cursor = db.cursor()
 
 hide = types.ReplyKeyboardRemove()  # Спрятанная клавиатура
 choice1 = types.ReplyKeyboardMarkup()
+
 choice1.row(types.KeyboardButton('Посмотреть'), types.KeyboardButton('Добавить'))
 
 meet = types.KeyboardButton('Встреча')
 sport = types.KeyboardButton('Спорт')
 other = types.KeyboardButton('Другое')
+abort = types.KeyboardButton('Отмена')
+
 theme_markup = types.ReplyKeyboardMarkup()
+theme_markup_add = types.ReplyKeyboardMarkup()
+
 theme_markup.row(meet, sport)
 theme_markup.row(other, types.KeyboardButton('Всё'))
+
+theme_markup_add.row(meet, sport)
+theme_markup_add.row(other, abort)
 
 bot = telebot.TeleBot(token=token)
 
@@ -37,27 +45,38 @@ def choose(message):
         bot.send_message(message.chat.id, 'Выберите тему', reply_markup=theme_markup)
         bot.register_next_step_handler(message, look_)
     else:
-        bot.send_message(message.chat.id, 'Выберите тему', reply_markup=theme_markup)
+        bot.send_message(message.chat.id, 'Выберите тему', reply_markup=theme_markup_add)
         bot.register_next_step_handler(message, theme)
 
 
 def look_(message):  # Просмотр ивентов
     snd = ''
-    command = 'SELECT * FROM `all` WHERE 1'
+    theme4sort = message.text
+    if message.text == 'Отмена':
+        start(message, False)
+    elif theme4sort == 'Всё':
+        command = 'SELECT * FROM `all` WHERE 1'
+    else:
+        command = "SELECT * FROM `all` WHERE theme = '{}'".format(theme4sort)
     cursor.execute(command)
     data = cursor.fetchall()
     for event in data:
         snd += event[2] + " " + event[3] + ' ' + event[4] + '\n' + event[5] + '\n' + event[7] + '\n' * 2
-    bot.send_message(message.chat.id, snd + 'Воть!!!')
+    bot.send_message(message.chat.id, snd)
     start(message, False)
 
 
 def theme(message):
-    global the
-    the = message.text
-    bot.send_message(message.chat.id, "Напишите информацию о  вашем событии по шаблону \n Название \n Дата \n Время "
-                                      "\n Место проведения \n Описание")
-    bot.register_next_step_handler(message, create)
+    if message.text == 'Отмена':
+        start(message, False)
+    else:
+        global the
+        the = message.text
+        bot.send_message(message.chat.id,
+                         "Напишите информацию о  вашем событии по шаблону \n Название \n Дата \n Время "
+                         "\n Место проведения \n Описание \n Вместо пустых полей не забывайте ставить "
+                         "прочерки(-)")
+        bot.register_next_step_handler(message, create)
 
 
 def create(message):
@@ -65,7 +84,8 @@ def create(message):
     l = message.text.split('\n')
     print(l)
     command = "INSERT INTO `all`(`user_id`, `event_id`, `name`, `date`, `time`, `adress`, `theme`, `description`)" \
-              " VALUES('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(message.from_user.id, str(count), l[0], l[1], l[2], l[3], the, l[4])
+              " VALUES('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(message.from_user.id, str(count), l[0],
+                                                                               l[1], l[2], l[3], the, l[4])
     cursor.execute(command)
     db.commit()
     count += 1
