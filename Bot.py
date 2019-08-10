@@ -52,9 +52,7 @@ def choose(message):
 def look_(message):  # Просмотр ивентов
     snd = ''
     theme4sort = message.text
-    if message.text == 'Отмена':
-        start(message, False)
-    elif theme4sort == 'Всё':
+    if theme4sort == 'Всё':
         command = 'SELECT * FROM `all` WHERE 1'
     else:
         command = "SELECT * FROM `all` WHERE theme = '{}'".format(theme4sort)
@@ -80,17 +78,20 @@ def theme(message):
 
 
 def create(message):
-    global count
-    l = message.text.split('\n')
-    print(l)
-    command = "INSERT INTO `all`(`user_id`, `event_id`, `name`, `date`, `time`, `adress`, `theme`, `description`)" \
-              " VALUES('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(message.from_user.id, str(count), l[0],
-                                                                               l[1], l[2], l[3], the, l[4])
-    cursor.execute(command)
-    db.commit()
-    count += 1
-    bot.send_message(message.chat.id, 'ГОТОВО!')
-    start(message, False)
+    if message.text == 'Отмена':
+        start(message, False)
+    else:
+        global count
+        l = message.text.split('\n')
+        print(l)
+        command = "INSERT INTO `all`(`user_id`, `event_id`, `name`, `date`, `time`, `adress`, `theme`, `description`)" \
+                  " VALUES('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(message.from_user.id, str(count), l[0],
+                                                                                   l[1], l[2], l[3], the, l[4])
+        cursor.execute(command)
+        db.commit()
+        count += 1
+        bot.send_message(message.chat.id, 'ГОТОВО!')
+        start(message, False)
 
 
 bot.polling(none_stop=True)
