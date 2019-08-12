@@ -2,13 +2,13 @@ import telebot
 import pymysql
 from telebot import types
 
-token = ''
+token = '721442351:AAHTxBWlgwvtz3tmDhPwcRkKeXo5WxC6lgk'
 count = 10
 the = ''
 my_town = ''
 what = True
 
-db = pymysql.connect(host='127.0.0.1', user='root', passwd='', db='events', charset='utf8mb4')
+db = pymysql.connect(host='sql7.freemysqlhosting.net', user='sql7301609', passwd='8swRXjLsGN', db='sql7301609', charset='utf8mb4')
 cursor = db.cursor()
 
 hide = types.ReplyKeyboardRemove()  # Спрятанная клавиатура
@@ -72,13 +72,13 @@ def look_(message):  # Просмотр ивентов
     snd = ''
     theme4sort = message.text
     if theme4sort == 'Всё':
-        command = "SELECT * FROM `all` WHERE town = '{}'".format(my_town)
+        command = "SELECT * FROM `events_event` WHERE event_city = '{}'".format(my_town)
     else:
-        command = "SELECT * FROM `all` WHERE theme = '{}' AND town = '{}'".format(theme4sort, my_town)
+        command = "SELECT * FROM `events_event` WHERE event_theme = '{}' AND event_city = '{}'".format(theme4sort, my_town)
     cursor.execute(command)
     data = cursor.fetchall()
     for event in data:
-        snd += event[2] + " " + event[3] + ' ' + event[4] + '\n' + event[5] + '\n' + event[7] + '\n' * 2
+        snd += event[6] + " " + event[3] + '\n' + event[7] + '\n' + event[1] + '\n' * 2
     bot.send_message(message.chat.id, snd)
     start(message, False)
 
@@ -103,9 +103,9 @@ def create(message):
         global count
         l = message.text.split('\n')
         print(l)
-        command = "INSERT INTO `all`(`user_id`, `event_id`, `name`, `date`, `time`, `adress`, `theme`, `town`, `description`)" \
-                  " VALUES('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(message.from_user.id, str(count), l[0],
-                                                                                   l[1], l[2], l[3], the, my_town, l[4])
+        command = "INSERT INTO `events_event`(`event_text`, `event_owner`, `event_date`, `event_theme`, " \
+                  "`event_city`, `event_name`, `event_address`) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', " \
+                  "'{}')".format(l[4], message.from_user.id, l[1] + ' ' + l[2], the, my_town, l[0], l[3])
         cursor.execute(command)
         db.commit()
         count += 1
