@@ -12,6 +12,7 @@ count = 10
 the = ''
 my_town = ''
 my_address = ''
+phone = ''
 what = True
 
 db = pymysql.connect(host='sql7.freemysqlhosting.net', user='sql7301609', passwd='8swRXjLsGN', db='sql7301609', charset='utf8mb4')
@@ -19,14 +20,18 @@ cursor = db.cursor()
 
 hide = types.ReplyKeyboardRemove()  # Спрятанная клавиатура
 
+sign_markup = types.ReplyKeyboardMarkup()
+sign_markup.row(types.KeyboardButton('Авторизироваться', request_contact=True))
+
 choice1 = types.ReplyKeyboardMarkup()
 choice1.row(types.KeyboardButton('Посмотреть'), types.KeyboardButton('Добавить'))
 
 town_markup = types.ReplyKeyboardMarkup()
 town_markup.row(types.KeyboardButton('Москва'), types.KeyboardButton('Казань'))
 
-meet = types.KeyboardButton('Встреча')
+meet = types.KeyboardButton('Встреча', request_contact=True)
 sport = types.KeyboardButton('Спорт')
+picnic = types.KeyboardButton('Пикник')
 music = types.KeyboardButton('Музыка')
 other = types.KeyboardButton('Другое')
 abort = types.KeyboardButton('Отмена')
@@ -35,10 +40,10 @@ theme_markup = types.ReplyKeyboardMarkup()
 theme_markup_add = types.ReplyKeyboardMarkup()
 
 theme_markup.row(meet, sport, music)
-theme_markup.row(other, types.KeyboardButton('Всё'))
+theme_markup.row(picnic, other, types.KeyboardButton('Всё'))
 
 theme_markup_add.row(meet, sport, music)
-theme_markup_add.row(other, abort)
+theme_markup_add.row(picnic, other, abort)
 
 bot = telebot.TeleBot(token=token)
 
@@ -46,14 +51,25 @@ bot = telebot.TeleBot(token=token)
 @bot.message_handler(commands=["start", 'd'])
 def start(message, ter=True):
     if ter:  # ter=True, если функция вызывается по окончанию добавления/просмотра ивентов
-        bot.send_message(message.chat.id, 'Привет! Что хочешь сделать?', reply_markup=choice1)
+        bot.send_message(message.chat.id, 'Привет! Авторизируйся, так ты сможешь создавать события, а также получить '
+                                          'сводку уже созданных тобой событий', reply_markup=sign_markup)
+        bot.register_next_step_handler(message, sign)
     else:
         bot.send_message(message.chat.id, 'Что хочешь сделать?', reply_markup=choice1)
+        bot.register_next_step_handler(message, choose)
+
+
+def sign(message):
+    global phone
+    phone = message.contact.phone_number
+    print(phone)
+    bot.send_message(message.chat.id, "Спасибо. Что дальше?", reply_markup=choice1)
     bot.register_next_step_handler(message, choose)
 
 
 def choose(message):
     global what
+    print(message)
     if message.text == 'Посмотреть':  # Просмотр ивентов
         what = True
         bot.send_message(message.chat.id, 'Выберите город', reply_markup=town_markup)
@@ -151,7 +167,7 @@ def dialogflow(message, context):
             print(date, time)
             command = "INSERT INTO `events_event`(`event_owner`, `event_name`, `event_date`, `event_theme`, " \
                       "`event_address`, `event_city`, `event_text`) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', " \
-                      "'Без описания')".format(message.from_user.id, name, date +  " " + time, the, my_address, my_town)
+                      "'Без описания')".format(phone, name, date +  " " + time, the, my_address, my_town)
             cursor.execute(command)
             db.commit()
             bot.send_message(message.chat.id, 'Вы успешно создали мероприятие! Выбирайте что дальше...', reply_markup=choice1)
