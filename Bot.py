@@ -7,7 +7,7 @@ import json
 import datetime
 
 
-token = '721442351:AAHTxBWlgwvtz3tmDhPwcRkKeXo5WxC6lgk'
+token = 'your_token'
 count = 10
 the = ''
 my_town = ''
